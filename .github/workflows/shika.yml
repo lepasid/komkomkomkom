@@ -1,0 +1,43 @@
+name: Update
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+jobs:
+  update_domains:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Download
+      run: |
+        curl --insecure -o domains "${{ secrets.SOURCE_URL }}"
+      shell: bash
+      continue-on-error: false
+
+    - name: Git stuff
+      run: |
+        git config user.name "${{ secrets.GHUB_USERNAME }}"
+        git config user.email "${{ secrets.GHUB_EMAIL }}"
+
+    - name: Commit it
+      run: |
+        git add domains
+        if ! git commit -m "[$GHUB_USERNAME] Update"; then
+          echo "Git commit failed"
+          exit 1
+        fi
+
+    - name: Push it
+      env:
+        GHUB_TOKEN: ${{ secrets.GHUB_TOKEN }}
+      run: |
+        if ! git push -u origin main; then
+          echo "Git push failed"
+          exit 1
+        fi
+
+    - name: Success maybe
+      run: echo "Script completed successfully."
