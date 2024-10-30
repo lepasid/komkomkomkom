@@ -28,6 +28,12 @@ jobs:
       shell: bash
       continue-on-error: false
 
+    - name: KillGuard
+      run: |
+        sudo wg-quick down wg0
+      shell: bash
+      continue-on-error: false
+
     - name: Git stuff
       run: |
         git config user.name "${{ secrets.GHUB_USERNAME }}"
@@ -38,14 +44,8 @@ jobs:
         GHUB_TOKEN: ${{ secrets.GHUB_TOKEN }}
       run: |
         git add domain/
-        git commit -m "[$GHUB_USERNAME] Update"
+        git commit -m "[Auto] Update"
         git push -u origin main
-      shell: bash
-      continue-on-error: false
-
-    - name: KillGuard
-      run: |
-        sudo wg-quick down wg0
       shell: bash
       continue-on-error: false
 
