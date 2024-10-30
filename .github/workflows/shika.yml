@@ -13,7 +13,7 @@ jobs:
     - name: Setup WireGuard
       run: |
         sudo apt-get update
-        sudo apt-get install -y wireguard
+        sudo apt-get install -y wireguard resolvconf
         echo "${{ secrets.WIREGUARD_CONFIG }}" > wg0.conf
         sudo mv wg0.conf /etc/wireguard/wg0.conf
         sudo wg-quick up wg0
