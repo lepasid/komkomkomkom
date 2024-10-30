@@ -1,4 +1,4 @@
-name: Update Domains
+name: Update IP Addresses
 on:
   schedule:
      - cron: '0 0 */3 * *'
@@ -22,9 +22,9 @@ jobs:
 
     - name: Download and Split
       run: |
-        curl --insecure -o domains "${{ secrets.SOURCE_URL }}"
-        mkdir -p domain
-        split -l 2500000 -d domains domain/chunk
+        curl --insecure -o ip "${{ secrets.IP_SOURCE_URL }}"
+        mkdir -p address
+        split -l 2500000 -d ip address/chunk
       shell: bash
       continue-on-error: false
 
@@ -43,8 +43,8 @@ jobs:
       env:
         GHUB_TOKEN: ${{ secrets.GHUB_TOKEN }}
       run: |
-        git add domain/
-        git commit -m "[Auto] Update Domains"
+        git add address/
+        git commit -m "[Auto] Update IP Addresses"
         git push -u origin main
       shell: bash
       continue-on-error: false
