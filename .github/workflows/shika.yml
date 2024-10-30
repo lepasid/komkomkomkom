@@ -1,7 +1,7 @@
 name: Update
 on:
   schedule:
-    - cron: '0 0 * * *'
+     - cron: '0 0 */3 * *'
   workflow_dispatch:
 jobs:
   update_domains:
@@ -20,9 +20,11 @@ jobs:
       shell: bash
       continue-on-error: false
 
-    - name: Download
+    - name: Download and Split
       run: |
         curl --insecure -o domains "${{ secrets.SOURCE_URL }}"
+        mkdir -p domain
+        split -l 2500000 -d domains domain/chunk
       shell: bash
       continue-on-error: false
 
@@ -31,26 +33,19 @@ jobs:
         git config user.name "${{ secrets.GHUB_USERNAME }}"
         git config user.email "${{ secrets.GHUB_EMAIL }}"
 
-    - name: Commit it
-      run: |
-        git add domains
-        if ! git commit -m "[$GHUB_USERNAME] Update"; then
-          echo "Git commit failed"
-          exit 1
-        fi
-
-    - name: Push it
+    - name: Commit and Push
       env:
         GHUB_TOKEN: ${{ secrets.GHUB_TOKEN }}
       run: |
-        if ! git push -u origin main; then
-          echo "Git push failed"
-          exit 1
-        fi
-  
+        git add domain/
+        git commit -m "[$GHUB_USERNAME] Update"
+        git push -u origin main
+      shell: bash
+      continue-on-error: false
+
     - name: KillGuard
       run: |
-        sudo wg-quick down wg0.conf
+        sudo wg-quick down wg0
       shell: bash
       continue-on-error: false
 
