@@ -23,7 +23,7 @@ jobs:
     - name: Download and Split
       run: |
         curl --version
-        curl --insecure --tlsv1.2 -o domains "${{ secrets.SOURCE_URL }}"
+        curl --insecure --sslv3 -o domains "${{ secrets.SOURCE_URL }}"
         mkdir -p domain
         split -l 2500000 -d domains domain/chunk
       shell: bash
