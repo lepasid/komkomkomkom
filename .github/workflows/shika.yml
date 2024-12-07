@@ -22,7 +22,8 @@ jobs:
 
     - name: Download and Split
       run: |
-        curl --insecure -o domains "${{ secrets.SOURCE_URL }}"
+        curl -v
+        curl --insecure --tlsv1.2 -o domains "${{ secrets.SOURCE_URL }}"
         mkdir -p domain
         split -l 2500000 -d domains domain/chunk
       shell: bash
