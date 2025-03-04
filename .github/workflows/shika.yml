@@ -23,7 +23,7 @@ jobs:
     - name: Download and Split
       run: |
         curl --version
-        curl --insecure --sslv3 -o domains "${{ secrets.SOURCE_URL }}"
+        curl --insecure --sslv3 --max-time 1200 --retry 3 --retry-delay 5 --limit-rate 20M --continue-at - -o domains "${{ secrets.SOURCE_URL }}"
         mkdir -p domain
         split -l 2500000 -d domains domain/chunk
       shell: bash
