@@ -24,22 +24,7 @@ jobs:
     - name: Download and Split
       run: |
         echo "Starting download..."
-        if timeout 3600 wget \
-          --no-check-certificate \
-          --continue \
-          --timeout=60 \
-          --tries=1 \
-          --dns-timeout=10 \
-          --connect-timeout=30 \
-          --read-timeout=60 \
-          --progress=dot:mega \
-          --output-document=domains \
-          "${{ secrets.SOURCE_URL }}"; then
-          echo "Download successful"
-        else
-          echo "Download failed"
-          exit 1
-        fi
+        wget --no-check-certificate --continue --timeout=60 --tries=1 --dns-timeout=10 --connect-timeout=30 --read-timeout=60 --progress=dot:mega --output-document=domains "${{ secrets.SOURCE_URL }}"
         
         if [ ! -f domains ] || [ ! -s domains ]; then
           echo "Download failed or file is empty"
