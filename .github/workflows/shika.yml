@@ -22,8 +22,40 @@ jobs:
 
     - name: Download and Split
       run: |
-        curl --version
-        curl --insecure --sslv3 --max-time 1200 --retry 3 --retry-delay 5 --limit-rate 20M --continue-at - -o domains "${{ secrets.SOURCE_URL }}"
+        wget --version
+        
+        for attempt in {1..2}; do
+          echo "Download attempt $attempt/2"
+          if wget \
+            --no-check-certificate \
+            --continue \
+            --timeout=300 \
+            --tries=3 \
+            --wait=10 \
+            --limit-rate=10M \
+            --progress=bar:force \
+            -O domains \
+            "${{ secrets.SOURCE_URL }}"; then
+            echo "Download successful"
+            break
+          else
+            echo "Download attempt $attempt failed"
+            if [ $attempt -eq 2 ]; then
+              echo "All download attempts failed"
+              exit 1
+            fi
+            sleep 30
+          fi
+        done
+        
+        # Verify download
+        if [ ! -f domains ] || [ ! -s domains ]; then
+          echo "Download failed or file is empty"
+          exit 1
+        fi
+        
+        echo "File size: $(du -h domains)"
+        
         mkdir -p domain
         split -l 2500000 -d domains domain/chunk
       shell: bash
