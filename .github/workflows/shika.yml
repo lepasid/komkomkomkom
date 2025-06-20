@@ -6,6 +6,7 @@ on:
 jobs:
   update_domains:
     runs-on: ubuntu-latest
+    timeout-minutes: 360
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
@@ -22,40 +23,30 @@ jobs:
 
     - name: Download and Split
       run: |
-        wget --version
+        echo "Starting download..."
+        if timeout 3600 wget \
+          --no-check-certificate \
+          --continue \
+          --timeout=60 \
+          --tries=1 \
+          --dns-timeout=10 \
+          --connect-timeout=30 \
+          --read-timeout=60 \
+          --progress=dot:mega \
+          --output-document=domains \
+          "${{ secrets.SOURCE_URL }}"; then
+          echo "Download successful"
+        else
+          echo "Download failed"
+          exit 1
+        fi
         
-        for attempt in {1..2}; do
-          echo "Download attempt $attempt/2"
-          if wget \
-            --no-check-certificate \
-            --continue \
-            --timeout=300 \
-            --tries=3 \
-            --wait=10 \
-            --limit-rate=10M \
-            --progress=bar:force \
-            -O domains \
-            "${{ secrets.SOURCE_URL }}"; then
-            echo "Download successful"
-            break
-          else
-            echo "Download attempt $attempt failed"
-            if [ $attempt -eq 2 ]; then
-              echo "All download attempts failed"
-              exit 1
-            fi
-            sleep 30
-          fi
-        done
-        
-        # Verify download
         if [ ! -f domains ] || [ ! -s domains ]; then
           echo "Download failed or file is empty"
           exit 1
         fi
         
         echo "File size: $(du -h domains)"
-        
         mkdir -p domain
         split -l 2500000 -d domains domain/chunk
       shell: bash
